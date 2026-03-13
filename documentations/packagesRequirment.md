@@ -14,6 +14,10 @@
 ```bash
 npm i express 
 ```
+#### node nodemon use for live reload on any changes in the code
+```bash
+npm i -D nodemon
+```
 
 ### step 2 intall mongoose
 <details>
@@ -58,7 +62,7 @@ console.log(user.getFullName()); // 'Rahim Uddin'
 </details>
 
  ```bash
- npm i mongoose
+npm i mongoose
  ```
 
 ### step 3 intall dotenv
@@ -68,7 +72,7 @@ console.log(user.getFullName()); // 'Rahim Uddin'
 </details>
 
  ```bash
- npm i dotenv
+npm i dotenv
  ```
 
 ### step 4 intall cors
@@ -80,7 +84,7 @@ console.log(user.getFullName()); // 'Rahim Uddin'
 </details>
 
  ```bash
- npm i cors
+npm i cors
  ```
 
 ### step 5 intall cors
@@ -92,7 +96,7 @@ console.log(user.getFullName()); // 'Rahim Uddin'
 </details>
 
  ```bash
- npm i cors
+npm i cors
  ```
 
 ### step 6 intall cookie-parser
@@ -106,5 +110,14 @@ JWT token, session data, user preference — সব cookie তে রাখা �
 </details>
 
  ```bash
- npm i cookie-parser
+npm i cookie-parser
+ ```
+### step 7 intall bcryptjs
+<details>
+ <summary>Why we use bcriptjs</summary>
+ For passord incription normal passor to hash password
+</details>
+
+ ```bash
+npm i bcryptjs
  ```
