@@ -121,3 +121,159 @@ npm i cookie-parser
  ```bash
 npm i bcryptjs
  ```
+### step 8 intall cloudinary and multer multer-storage-cloudinary
+<details>
+ <summary>Why we use bcriptjs</summary>
+
+### ১. Multer (দ্য মিডলওয়্যার)
+- Multer মূলত একটি Node.js মিডলওয়্যার যা multipart/form-data হ্যান্ডেল করে। যখনই আমরা কোনো ফাইল (ইমেজ, পিডিএফ) আপলোড করি, তখন সাধারণ body-parser দিয়ে সেই ডাটা পড়া যায় না।
+
+- কেন ব্যবহার করবেন: এটি ইউজারের পাঠানো ফাইলটিকে সার্ভারে রিসিভ করে এবং সেটিকে প্রসেস করার উপযোগী করে তোলে।
+
+- প্রধান কাজ: ফাইল সাইজ লিমিট করা, নির্দিষ্ট ফরম্যাট (যেমন: শুধু JPG/PNG) ফিল্টার করা এবং ফাইলটিকে একটি বাফার বা টেম্পোরারি স্টোরেজে রাখা।
+
+### ৩. Multer-Storage-Cloudinary (সেতুবন্ধন)
+##### এটি একটি ইঞ্জিন যা Multer-কে বলে দেয় যে ফাইলটি লোকাল হার্ডড্রাইভে সেভ না করে সরাসরি Cloudinary-তে পাঠিয়ে দিতে।
+
+- কেন ব্যবহার করবেন: এটি ছাড়া আপনাকে প্রথমে Multer দিয়ে ফাইলটি নিজের সার্ভারে সেভ করতে হতো, তারপর আলাদা কোড লিখে Cloudinary-তে পাঠাতে হতো। এই প্যাকেজটি সেই কাজটিকে সহজ ও অটোমেটিক করে দেয়।
+
+- ১. ইউজার ফর্মের মাধ্যমে ছবি পাঠায়।
+- ২. Multer সেই ফাইলটি রিসিভ করে।
+- ৩. Multer-Storage-Cloudinary সেই ফাইলটিকে আপনার Cloudinary অ্যাকাউন্টে আপলোড করে।
+- ৪. আপলোড শেষে Cloudinary একটি Secure URL রিটার্ন করে।
+- ৫. আপনি সেই URL-টি নিয়ে আপনার MongoDB ডাটাবেসে ইউজার বা প্রোডাক্টের ডাটা হিসেবে সেভ করেন।
+
+### how to use
+- step 1 Cloudinary config
+```js
+// config/cloudinary.js
+import { v2 as cloudinary } from "cloudinary";
+
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+export default cloudinary;
+```
+
+**.env file:**
+```
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+```
+- Step 3: Multer + Cloudinary Storage setup
+```js
+// config/multer.js
+import multer from "multer";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
+import cloudinary from "./cloudinary.js";
+
+const storage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: "users",        // Cloudinary folder name
+        allowed_formats: ["jpg", "jpeg", "png", "webp"],
+    },
+});
+
+export const upload = multer({ storage });
+```
+- Step 4: MongoDB Model
+```js
+// models/User.js
+import mongoose, { Schema } from "mongoose";
+
+const userSchema = new Schema({
+    username: { type: String, required: true },
+    email:    { type: String, required: true },
+    avatar:   { type: String },   // Cloudinary URL এখানে save হবে
+}, { timestamps: true });
+
+const User = mongoose.models.User || mongoose.model("User", userSchema);
+export default User;
+```
+- Step 5: Controller
+```js
+// controllers/userController.js
+import User from "../models/User.js";
+
+export const createUser = async (req, res) => {
+    try {
+        const { username, email } = req.body;
+        
+        // multer স্বয়ংক্রিয়ভাবে Cloudinary তে upload করে
+        // এবং req.file তে URL দিয়ে দেয়
+        const avatarUrl = req.file?.path;  // ← Cloudinary URL
+
+        const user = await User.create({
+            username,
+            email,
+            avatar: avatarUrl,
+        });
+
+        res.status(201).json({ success: true, user });
+
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+```
+- Step 6: Route
+```js
+// routes/userRoute.js
+import express from "express";
+import { upload } from "../config/multer.js";
+import { createUser } from "../controllers/userController.js";
+
+const router = express.Router();
+
+// upload.single("avatar") — "avatar" হলো form-data field name
+router.post("/create", upload.single("avatar"), createUser);
+
+export default router;
+```
+
+---
+
+### Postman এ test করার নিয়ম:
+```
+POST /api/users/create
+Body → form-data
+
+Key          | Value
+-------------|------------------
+username     | John
+email        | john@gmail.com
+avatar       | [file select করো]  ← type: File
+```
+- MongoDB তে যা save হবে:
+```json
+{
+  "_id": "664abc...",
+  "username": "John",
+  "email": "john@gmail.com",
+  "avatar": "https://res.cloudinary.com/your_cloud/image/upload/v123/users/abc.jpg",
+  "createdAt": "2024-01-01"
+}
+```
+- req.file এ কী কী পাওয়া যায়:
+```js
+req.file = {
+    path:         // ← Cloudinary URL (এটাই save করবে)
+    filename:     // ← public_id
+    originalname: // ← original file name
+    mimetype:     // ← image/jpeg
+    size:         // ← file size
+}
+```
+</details>
+
+ ```bash
+npm install cloudinary multer multer-storage-cloudinary
+ ```
+
+
+
