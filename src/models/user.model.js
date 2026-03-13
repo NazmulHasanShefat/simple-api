@@ -14,22 +14,22 @@ const userSchema = new Schema(
 )
 
 
-userSchema.pre("save", async function(next) {
+userSchema.pre("save", async function() {
     try {
         if (this.username) this.username = this.username.replace(/\s+/g, "");
         if (this.email) this.email =  this.email.replace(/\s+/g, "");
 
         if(!this.isModified("password")){
-            return next();
+            return;
         }
         this.password = await bcrypt.hash(this.password, 10);
-
+        // next();
     } catch (error) {
-        next(error)
+        console.log(error)
     }
 })
 
-// userSchema.plugin(AutoIncrement, { inc_field: 'id' } )
+// userSchema.plugin(AutoIncrement, { inc_field: 'id' });
 
 const User = mongoose.model("User", userSchema);
 export default User

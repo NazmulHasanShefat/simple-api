@@ -6,11 +6,11 @@ configDotenv();
 
 dns.setServers(["1.1.1.1", "8.8.8.8"]);
 
-
+app.get("/",(req, res)=>{
+    res.send({message: "welcome to node backend server !"})
+})
 
 dbConnect()
-
-
 
 .then(()=>{
     app.listen(process.env.PORT || 9000, ()=>{

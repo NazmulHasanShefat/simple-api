@@ -13,4 +13,5 @@ app.use(express.json());
 app.use("/api", authrouter);
 app.use("/", getUserRoute);
 
+
 export { app };
