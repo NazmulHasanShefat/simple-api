@@ -1,5 +1,8 @@
 import mongoose, { Schema} from "mongoose";
 import bcrypt from "bcryptjs";
+// import AutoIncrementFactory from 'mongoose-sequence';
+// const AutoIncrement = AutoIncrementFactory(mongoose);
+
 const userSchema = new Schema(
     {
         username: { type: String, unique:true, trim:true, required: true},
@@ -25,6 +28,8 @@ userSchema.pre("save", async function(next) {
         next(error)
     }
 })
+
+// userSchema.plugin(AutoIncrement, { inc_field: 'id' } )
 
 const User = mongoose.model("User", userSchema);
 export default User

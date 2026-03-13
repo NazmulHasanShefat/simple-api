@@ -13,7 +13,6 @@
   "engines": {
     "node": ">=18.0.0"
   },
-
   "dependencies": {
     "bcryptjs": "^3.0.3",
     "cloudinary": "^2.9.0",
@@ -22,6 +21,7 @@
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
     "mongoose": "^9.3.0",
+    "mongoose-sequence": "^6.0.1",
     "multer": "^2.1.1",
     "multer-storage-cloudinary": "^2.2.1"
   },
