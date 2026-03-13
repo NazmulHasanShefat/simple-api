@@ -123,7 +123,7 @@ npm i bcryptjs
  ```
 ### step 8 intall cloudinary and multer multer-storage-cloudinary
 <details>
- <summary>Why we use bcriptjs</summary>
+ <summary>Why we use cloudinary and multer multer-storage-cloudinary</summary>
 
 ### ১. Multer (দ্য মিডলওয়্যার)
 - Multer মূলত একটি Node.js মিডলওয়্যার যা multipart/form-data হ্যান্ডেল করে। যখনই আমরা কোনো ফাইল (ইমেজ, পিডিএফ) আপলোড করি, তখন সাধারণ body-parser দিয়ে সেই ডাটা পড়া যায় না।
