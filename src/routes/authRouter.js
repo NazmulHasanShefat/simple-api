@@ -7,7 +7,16 @@ authrouter.post("/register", async (req, res)=>{
         const user = await User.create(req.body);
         await res.status(201).json(user);
     } catch (error) {
-        console.log(`faild to post user Error:${error}`);
+        if(error.code === 11000){
+            return res.status(409).json({
+                success: "false",
+                message: "User alrady exist"
+            })
+        }else{
+           return res.send({
+                message: error.message,
+            })
+        }
     }
 })
 

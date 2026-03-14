@@ -1,35 +1,60 @@
-import mongoose, { Schema} from "mongoose";
+import mongoose, { Schema } from "mongoose";
 import bcrypt from "bcryptjs";
-// import AutoIncrementFactory from 'mongoose-sequence';
-// const AutoIncrement = AutoIncrementFactory(mongoose);
+import Counter from "./counter.model.js";
 
 const userSchema = new Schema(
     {
-        username: { type: String, unique:true, trim:true, required: true},
-        email: { type: String, unique: true, trim:true, required: true},
+        userId: { type: Number, unique: true },
+        username: { type: String, unique: true, trim: true, required: true },
+        email: { type: String, unique: true, trim: true, required: true },
         password: { type: String, required: true },
-        isActive: { type:Boolean, default: true, },
-        role: { type:String, default: "user" }
+        isActive: { type: Boolean, default: true, },
+        role: { type: String, default: "user" }
     }, { timestamps: true }
 )
 
-
-userSchema.pre("save", async function() {
+userSchema.pre("save", async function (next) {
     try {
-        if (this.username) this.username = this.username.replace(/\s+/g, "");
-        if (this.email) this.email =  this.email.replace(/\s+/g, "");
 
-        if(!this.isModified("password")){
-            return;
+        if (this.username) this.username = this.username.replace(/\s+/g, "");
+        if (this.email) this.email = this.email.replace(/\s+/g, "");
+
+        // duplicate check
+        const checkDuplicateUser = await mongoose.models.User.findOne({
+            $or:[
+                {username:this.username},
+                {email:this.email}
+            ]
+        });
+
+        if(checkDuplicateUser){
+            return console.log("❌ username or email exist")
         }
+
+        if (!this.isModified("password")) {
+            return next();
+        }
+
         this.password = await bcrypt.hash(this.password, 10);
-        // next();
+
+        if (this.isNew && this.username) {
+
+            const counter = await Counter.findOneAndUpdate(
+                { id: "user_auto_id" },
+                { $inc: { seq: 1 } },
+                { returnDocument: "after", upsert: true }
+            )
+
+             this.userId = counter.seq;
+        }
+
     } catch (error) {
         console.log(error)
+        next(error)
     }
 })
 
-// userSchema.plugin(AutoIncrement, { inc_field: 'id' });
-
 const User = mongoose.model("User", userSchema);
+
 export default User
+
