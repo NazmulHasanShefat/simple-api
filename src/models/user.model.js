@@ -19,7 +19,7 @@ userSchema.pre("save", async function (next) {
         if (this.username) this.username = this.username.replace(/\s+/g, "");
         if (this.email) this.email = this.email.replace(/\s+/g, "");
 
-        // duplicate check
+        // duplicate check zeno auto increment useId create na hoy
         const checkDuplicateUser = await mongoose.models.User.findOne({
             $or:[
                 {username:this.username},
@@ -30,14 +30,14 @@ userSchema.pre("save", async function (next) {
         if(checkDuplicateUser){
             return console.log("❌ username or email exist")
         }
-
+        
         if (!this.isModified("password")) {
             return next();
         }
 
         this.password = await bcrypt.hash(this.password, 10);
 
-        if (this.isNew && this.username) {
+        if (this.isNew) {
 
             const counter = await Counter.findOneAndUpdate(
                 { id: "user_auto_id" },
