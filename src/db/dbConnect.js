@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 const dbConnect = async ()=>{
     try {
+        // const dbConnectionInstance = await mongoose.connect(`{process.env.DB_URL}/your_project_name`);
         const dbConnectionInstance = await mongoose.connect(process.env.DB_URL);
         console.log(`✅ db connected successfully ${dbConnectionInstance.connection.host}`);
     } catch (error) {
